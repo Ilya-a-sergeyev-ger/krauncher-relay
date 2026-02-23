@@ -1,0 +1,8 @@
+# Go build output (binary at repo root)
+/relay
+*.exe
+*.test
+*.out
+
+# Environment
+.env

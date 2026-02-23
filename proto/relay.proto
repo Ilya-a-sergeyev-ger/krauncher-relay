@@ -1,0 +1,70 @@
+// relay.proto — service definition for cas-relay gRPC API.
+//
+// Worker authentication:  gRPC metadata keys x-worker-id / x-worker-ts / x-worker-sig
+// Client authentication:  gRPC metadata key  authorization: bearer <relay_task_token>
+syntax = "proto3";
+
+package relay.v1;
+
+option go_package = "cas-relay/internal/relayv1";
+
+// Relay is the single gRPC service that mediates between workers and clients.
+service Relay {
+  // WorkerStream is a bidirectional stream — one per worker connection.
+  // Worker sends task output (stdout/stderr/metric/event/status).
+  // Relay sends back TypePayload commands when the client uploads encrypted data.
+  rpc WorkerStream(stream WorkerMessage) returns (stream WorkerCommand);
+
+  // TaskStream is a server-side stream — one per client × task subscription.
+  // The client receives backfilled and live messages for the requested task.
+  rpc TaskStream(TaskStreamRequest) returns (stream TaskMessage);
+
+  // UploadPayload delivers the client's encrypted task payload to the worker.
+  // Replaces the former HTTP PUT /tasks/{task_id}/payload endpoint.
+  rpc UploadPayload(UploadPayloadRequest) returns (UploadPayloadResponse);
+}
+
+// WorkerMessage is a single message sent by a worker to the relay.
+// The data field contains raw JSON whose shape depends on type:
+//   stdout / stderr  →  {"text": "..."}
+//   metric           →  MetricData JSON
+//   event            →  {"name": "...", ...}   (key_exchange, stream_ended, …)
+//   status           →  arbitrary user JSON
+message WorkerMessage {
+  string task_id = 1;
+  string type    = 2;  // "stdout" | "stderr" | "metric" | "event" | "status"
+  double ts      = 3;  // Unix timestamp, fractional seconds
+  bytes  data    = 4;  // raw JSON bytes
+}
+
+// WorkerCommand is a message sent by the relay to the worker.
+// Currently only carries TypePayload (encrypted task payload from client).
+message WorkerCommand {
+  string task_id = 1;
+  string type    = 2;  // "payload"
+  double ts      = 3;
+  bytes  data    = 4;  // {"enc": "<base64url(nonce + ciphertext)>"}
+}
+
+// TaskStreamRequest identifies which task stream the client wants to subscribe to.
+message TaskStreamRequest {
+  string task_id = 1;
+}
+
+// TaskMessage is one message delivered to a subscribing client.
+// seq is the monotonic per-task counter assigned by TaskStream.Publish.
+message TaskMessage {
+  string task_id = 1;
+  string type    = 2;
+  double ts      = 3;
+  uint64 seq     = 4;
+  bytes  data    = 5;  // raw JSON bytes
+}
+
+// UploadPayloadRequest carries the encrypted task payload from the client.
+message UploadPayloadRequest {
+  string task_id = 1;
+  bytes  data    = 2;  // JSON: {"enc": "<base64url(nonce + ciphertext)>"}
+}
+
+message UploadPayloadResponse {}
