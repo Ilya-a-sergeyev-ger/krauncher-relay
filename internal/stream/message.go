@@ -14,6 +14,8 @@ const (
 	TypeEvent   MessageType = "event"
 	TypeStatus  MessageType = "status"
 	TypePayload MessageType = "payload" // relay→worker: encrypted task payload delivery
+	TypePing    MessageType = "ping"    // worker→relay: bidi stream readiness probe
+	TypePong    MessageType = "pong"    // relay→worker: bidi stream readiness ack
 )
 
 // Message is the unified envelope for all data flowing through Relay.

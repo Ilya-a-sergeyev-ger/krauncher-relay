@@ -110,6 +110,22 @@ func workerReadLoop(
 		ts.Publish(msg)
 		hub.Touch(msg.TaskID)
 
+		// Ping/pong: worker sends a ping to verify bidi stream is ready.
+		// Echo it back immediately so the worker knows it can receive commands.
+		if msg.Type == stream.TypePing {
+			pong := stream.Message{
+				TaskID: msg.TaskID,
+				Type:   stream.TypePong,
+				TS:     msg.TS,
+			}
+			select {
+			case outCh <- pong:
+			default:
+			}
+			logger.Debug().Msg("ping_pong")
+			continue
+		}
+
 		if isKeyExchange(msg) {
 			payloadHub.RegisterWorker(msg.TaskID, outCh)
 			logger.Info().Str("task_id", msg.TaskID).Msg("worker_registered_for_payload")
