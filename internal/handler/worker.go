@@ -94,6 +94,22 @@ func workerReadLoop(
 		if err != nil {
 			return err
 		}
+		// Ping/pong: worker sends a ping (task_id="") to verify bidi
+		// stream is ready.  Handle before the empty-task_id guard.
+		if stream.MessageType(proto.Type) == stream.TypePing {
+			pong := stream.Message{
+				TaskID: proto.TaskId,
+				Type:   stream.TypePong,
+				TS:     proto.Ts,
+			}
+			select {
+			case outCh <- pong:
+			default:
+			}
+			logger.Debug().Msg("ping_pong")
+			continue
+		}
+
 		if proto.TaskId == "" {
 			logger.Warn().Msg("ignoring worker message with empty task_id")
 			continue
@@ -109,22 +125,6 @@ func workerReadLoop(
 		ts := hub.GetOrCreate(msg.TaskID)
 		ts.Publish(msg)
 		hub.Touch(msg.TaskID)
-
-		// Ping/pong: worker sends a ping to verify bidi stream is ready.
-		// Echo it back immediately so the worker knows it can receive commands.
-		if msg.Type == stream.TypePing {
-			pong := stream.Message{
-				TaskID: msg.TaskID,
-				Type:   stream.TypePong,
-				TS:     msg.TS,
-			}
-			select {
-			case outCh <- pong:
-			default:
-			}
-			logger.Debug().Msg("ping_pong")
-			continue
-		}
 
 		if isKeyExchange(msg) {
 			payloadHub.RegisterWorker(msg.TaskID, outCh)
