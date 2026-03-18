@@ -1,3 +1,5 @@
+// Copyright (c) 2024-2026 Ilya Sergeev. Licensed under the MIT License.
+
 // Package stream implements the core fan-out primitives for cas-relay:
 // ring-buffered per-task streams with backfill and ordered delivery.
 package stream

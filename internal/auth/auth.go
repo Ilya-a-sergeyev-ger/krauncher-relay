@@ -1,3 +1,5 @@
+// Copyright (c) 2024-2026 Ilya Sergeev. Licensed under the MIT License.
+
 // Package auth implements authentication for worker and client connections.
 //
 // Workers authenticate with HMAC-SHA256 signatures passed as gRPC metadata.

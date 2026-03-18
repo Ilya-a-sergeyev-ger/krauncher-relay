@@ -1,3 +1,5 @@
+// Copyright (c) 2024-2026 Ilya Sergeev. Licensed under the MIT License.
+
 // Package config loads cas-relay runtime configuration from environment variables.
 package config
 
