@@ -96,3 +96,29 @@ func (s *RelayServer) UploadPayload(ctx context.Context, req *relayv1.UploadPayl
 	return &relayv1.UploadPayloadResponse{}, nil
 }
 
+// CancelTask implements the unary RPC for client-requested task cancellation.
+//
+// The relay forwards a TypeCancel command to the worker executing the task.
+// Returns NotFound if the worker is not currently registered (task not running).
+func (s *RelayServer) CancelTask(ctx context.Context, req *relayv1.CancelTaskRequest) (*relayv1.CancelTaskResponse, error) {
+	claims, err := auth.VerifyClientMetadata(ctx, s.cfg.TokenSecret)
+	if err != nil {
+		return nil, status.Errorf(codes.Unauthenticated, "client auth failed: %v", err)
+	}
+	if claims.TaskID != req.TaskId {
+		return nil, status.Errorf(codes.PermissionDenied,
+			"token task_id %q does not match request task_id %q", claims.TaskID, req.TaskId)
+	}
+
+	if err := s.payloadHub.DeliverCancel(req.TaskId); err != nil {
+		return nil, status.Errorf(codes.NotFound, "task not running: %v", err)
+	}
+
+	log.Info().
+		Str("task_id", req.TaskId).
+		Str("user_id", claims.UserID).
+		Msg("cancel_delivered")
+
+	return &relayv1.CancelTaskResponse{}, nil
+}
+

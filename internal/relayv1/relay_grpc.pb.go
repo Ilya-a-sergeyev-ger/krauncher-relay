@@ -7,7 +7,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.1
 // - protoc             v3.21.12
-// source: relay.proto
+// source: proto/relay.proto
 
 package relayv1
 
@@ -27,6 +27,7 @@ const (
 	Relay_WorkerStream_FullMethodName  = "/relay.v1.Relay/WorkerStream"
 	Relay_TaskStream_FullMethodName    = "/relay.v1.Relay/TaskStream"
 	Relay_UploadPayload_FullMethodName = "/relay.v1.Relay/UploadPayload"
+	Relay_CancelTask_FullMethodName    = "/relay.v1.Relay/CancelTask"
 )
 
 // RelayClient is the client API for Relay service.
@@ -45,6 +46,9 @@ type RelayClient interface {
 	// UploadPayload delivers the client's encrypted task payload to the worker.
 	// Replaces the former HTTP PUT /tasks/{task_id}/payload endpoint.
 	UploadPayload(ctx context.Context, in *UploadPayloadRequest, opts ...grpc.CallOption) (*UploadPayloadResponse, error)
+	// CancelTask sends a cancel signal to the worker executing the given task.
+	// The client must present a valid relay_task_token scoped to that task_id.
+	CancelTask(ctx context.Context, in *CancelTaskRequest, opts ...grpc.CallOption) (*CancelTaskResponse, error)
 }
 
 type relayClient struct {
@@ -97,6 +101,16 @@ func (c *relayClient) UploadPayload(ctx context.Context, in *UploadPayloadReques
 	return out, nil
 }
 
+func (c *relayClient) CancelTask(ctx context.Context, in *CancelTaskRequest, opts ...grpc.CallOption) (*CancelTaskResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CancelTaskResponse)
+	err := c.cc.Invoke(ctx, Relay_CancelTask_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RelayServer is the server API for Relay service.
 // All implementations must embed UnimplementedRelayServer
 // for forward compatibility.
@@ -113,6 +127,9 @@ type RelayServer interface {
 	// UploadPayload delivers the client's encrypted task payload to the worker.
 	// Replaces the former HTTP PUT /tasks/{task_id}/payload endpoint.
 	UploadPayload(context.Context, *UploadPayloadRequest) (*UploadPayloadResponse, error)
+	// CancelTask sends a cancel signal to the worker executing the given task.
+	// The client must present a valid relay_task_token scoped to that task_id.
+	CancelTask(context.Context, *CancelTaskRequest) (*CancelTaskResponse, error)
 	mustEmbedUnimplementedRelayServer()
 }
 
@@ -131,6 +148,9 @@ func (UnimplementedRelayServer) TaskStream(*TaskStreamRequest, grpc.ServerStream
 }
 func (UnimplementedRelayServer) UploadPayload(context.Context, *UploadPayloadRequest) (*UploadPayloadResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UploadPayload not implemented")
+}
+func (UnimplementedRelayServer) CancelTask(context.Context, *CancelTaskRequest) (*CancelTaskResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CancelTask not implemented")
 }
 func (UnimplementedRelayServer) mustEmbedUnimplementedRelayServer() {}
 func (UnimplementedRelayServer) testEmbeddedByValue()               {}
@@ -189,6 +209,24 @@ func _Relay_UploadPayload_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Relay_CancelTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CancelTaskRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RelayServer).CancelTask(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Relay_CancelTask_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RelayServer).CancelTask(ctx, req.(*CancelTaskRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Relay_ServiceDesc is the grpc.ServiceDesc for Relay service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -199,6 +237,10 @@ var Relay_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UploadPayload",
 			Handler:    _Relay_UploadPayload_Handler,
+		},
+		{
+			MethodName: "CancelTask",
+			Handler:    _Relay_CancelTask_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
@@ -214,5 +256,5 @@ var Relay_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "relay.proto",
+	Metadata: "proto/relay.proto",
 }

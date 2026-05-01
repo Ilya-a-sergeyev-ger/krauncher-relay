@@ -22,6 +22,10 @@ service Relay {
   // UploadPayload delivers the client's encrypted task payload to the worker.
   // Replaces the former HTTP PUT /tasks/{task_id}/payload endpoint.
   rpc UploadPayload(UploadPayloadRequest) returns (UploadPayloadResponse);
+
+  // CancelTask sends a cancel signal to the worker executing the given task.
+  // The client must present a valid relay_task_token scoped to that task_id.
+  rpc CancelTask(CancelTaskRequest) returns (CancelTaskResponse);
 }
 
 // WorkerMessage is a single message sent by a worker to the relay.
@@ -38,12 +42,11 @@ message WorkerMessage {
 }
 
 // WorkerCommand is a message sent by the relay to the worker.
-// Currently only carries TypePayload (encrypted task payload from client).
 message WorkerCommand {
   string task_id = 1;
-  string type    = 2;  // "payload"
+  string type    = 2;  // "payload" | "cancel"
   double ts      = 3;
-  bytes  data    = 4;  // {"enc": "<base64url(nonce + ciphertext)>"}
+  bytes  data    = 4;  // {"enc": "<base64url(nonce + ciphertext)>"} for payload; empty for cancel
 }
 
 // TaskStreamRequest identifies which task stream the client wants to subscribe to.
@@ -68,3 +71,10 @@ message UploadPayloadRequest {
 }
 
 message UploadPayloadResponse {}
+
+// CancelTaskRequest asks the relay to forward a cancel command to the worker.
+message CancelTaskRequest {
+  string task_id = 1;
+}
+
+message CancelTaskResponse {}

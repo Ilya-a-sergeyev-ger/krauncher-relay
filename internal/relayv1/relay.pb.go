@@ -7,7 +7,7 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        v3.21.12
-// source: relay.proto
+// source: proto/relay.proto
 
 package relayv1
 
@@ -45,7 +45,7 @@ type WorkerMessage struct {
 
 func (x *WorkerMessage) Reset() {
 	*x = WorkerMessage{}
-	mi := &file_relay_proto_msgTypes[0]
+	mi := &file_proto_relay_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -57,7 +57,7 @@ func (x *WorkerMessage) String() string {
 func (*WorkerMessage) ProtoMessage() {}
 
 func (x *WorkerMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_proto_msgTypes[0]
+	mi := &file_proto_relay_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -70,7 +70,7 @@ func (x *WorkerMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerMessage.ProtoReflect.Descriptor instead.
 func (*WorkerMessage) Descriptor() ([]byte, []int) {
-	return file_relay_proto_rawDescGZIP(), []int{0}
+	return file_proto_relay_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *WorkerMessage) GetTaskId() string {
@@ -102,20 +102,19 @@ func (x *WorkerMessage) GetData() []byte {
 }
 
 // WorkerCommand is a message sent by the relay to the worker.
-// Currently only carries TypePayload (encrypted task payload from client).
 type WorkerCommand struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	TaskId        string                 `protobuf:"bytes,1,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
-	Type          string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"` // "payload"
+	Type          string                 `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"` // "payload" | "cancel"
 	Ts            float64                `protobuf:"fixed64,3,opt,name=ts,proto3" json:"ts,omitempty"`
-	Data          []byte                 `protobuf:"bytes,4,opt,name=data,proto3" json:"data,omitempty"` // {"enc": "<base64url(nonce + ciphertext)>"}
+	Data          []byte                 `protobuf:"bytes,4,opt,name=data,proto3" json:"data,omitempty"` // {"enc": "<base64url(nonce + ciphertext)>"} for payload; empty for cancel
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *WorkerCommand) Reset() {
 	*x = WorkerCommand{}
-	mi := &file_relay_proto_msgTypes[1]
+	mi := &file_proto_relay_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -127,7 +126,7 @@ func (x *WorkerCommand) String() string {
 func (*WorkerCommand) ProtoMessage() {}
 
 func (x *WorkerCommand) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_proto_msgTypes[1]
+	mi := &file_proto_relay_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -140,7 +139,7 @@ func (x *WorkerCommand) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WorkerCommand.ProtoReflect.Descriptor instead.
 func (*WorkerCommand) Descriptor() ([]byte, []int) {
-	return file_relay_proto_rawDescGZIP(), []int{1}
+	return file_proto_relay_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *WorkerCommand) GetTaskId() string {
@@ -181,7 +180,7 @@ type TaskStreamRequest struct {
 
 func (x *TaskStreamRequest) Reset() {
 	*x = TaskStreamRequest{}
-	mi := &file_relay_proto_msgTypes[2]
+	mi := &file_proto_relay_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -193,7 +192,7 @@ func (x *TaskStreamRequest) String() string {
 func (*TaskStreamRequest) ProtoMessage() {}
 
 func (x *TaskStreamRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_proto_msgTypes[2]
+	mi := &file_proto_relay_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -206,7 +205,7 @@ func (x *TaskStreamRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TaskStreamRequest.ProtoReflect.Descriptor instead.
 func (*TaskStreamRequest) Descriptor() ([]byte, []int) {
-	return file_relay_proto_rawDescGZIP(), []int{2}
+	return file_proto_relay_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *TaskStreamRequest) GetTaskId() string {
@@ -231,7 +230,7 @@ type TaskMessage struct {
 
 func (x *TaskMessage) Reset() {
 	*x = TaskMessage{}
-	mi := &file_relay_proto_msgTypes[3]
+	mi := &file_proto_relay_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -243,7 +242,7 @@ func (x *TaskMessage) String() string {
 func (*TaskMessage) ProtoMessage() {}
 
 func (x *TaskMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_proto_msgTypes[3]
+	mi := &file_proto_relay_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -256,7 +255,7 @@ func (x *TaskMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TaskMessage.ProtoReflect.Descriptor instead.
 func (*TaskMessage) Descriptor() ([]byte, []int) {
-	return file_relay_proto_rawDescGZIP(), []int{3}
+	return file_proto_relay_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *TaskMessage) GetTaskId() string {
@@ -305,7 +304,7 @@ type UploadPayloadRequest struct {
 
 func (x *UploadPayloadRequest) Reset() {
 	*x = UploadPayloadRequest{}
-	mi := &file_relay_proto_msgTypes[4]
+	mi := &file_proto_relay_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -317,7 +316,7 @@ func (x *UploadPayloadRequest) String() string {
 func (*UploadPayloadRequest) ProtoMessage() {}
 
 func (x *UploadPayloadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_proto_msgTypes[4]
+	mi := &file_proto_relay_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -330,7 +329,7 @@ func (x *UploadPayloadRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UploadPayloadRequest.ProtoReflect.Descriptor instead.
 func (*UploadPayloadRequest) Descriptor() ([]byte, []int) {
-	return file_relay_proto_rawDescGZIP(), []int{4}
+	return file_proto_relay_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *UploadPayloadRequest) GetTaskId() string {
@@ -355,7 +354,7 @@ type UploadPayloadResponse struct {
 
 func (x *UploadPayloadResponse) Reset() {
 	*x = UploadPayloadResponse{}
-	mi := &file_relay_proto_msgTypes[5]
+	mi := &file_proto_relay_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -367,7 +366,7 @@ func (x *UploadPayloadResponse) String() string {
 func (*UploadPayloadResponse) ProtoMessage() {}
 
 func (x *UploadPayloadResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_relay_proto_msgTypes[5]
+	mi := &file_proto_relay_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -380,14 +379,95 @@ func (x *UploadPayloadResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UploadPayloadResponse.ProtoReflect.Descriptor instead.
 func (*UploadPayloadResponse) Descriptor() ([]byte, []int) {
-	return file_relay_proto_rawDescGZIP(), []int{5}
+	return file_proto_relay_proto_rawDescGZIP(), []int{5}
 }
 
-var File_relay_proto protoreflect.FileDescriptor
+// CancelTaskRequest asks the relay to forward a cancel command to the worker.
+type CancelTaskRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TaskId        string                 `protobuf:"bytes,1,opt,name=task_id,json=taskId,proto3" json:"task_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
 
-const file_relay_proto_rawDesc = "" +
+func (x *CancelTaskRequest) Reset() {
+	*x = CancelTaskRequest{}
+	mi := &file_proto_relay_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelTaskRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelTaskRequest) ProtoMessage() {}
+
+func (x *CancelTaskRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_relay_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelTaskRequest.ProtoReflect.Descriptor instead.
+func (*CancelTaskRequest) Descriptor() ([]byte, []int) {
+	return file_proto_relay_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *CancelTaskRequest) GetTaskId() string {
+	if x != nil {
+		return x.TaskId
+	}
+	return ""
+}
+
+type CancelTaskResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CancelTaskResponse) Reset() {
+	*x = CancelTaskResponse{}
+	mi := &file_proto_relay_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CancelTaskResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CancelTaskResponse) ProtoMessage() {}
+
+func (x *CancelTaskResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_proto_relay_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CancelTaskResponse.ProtoReflect.Descriptor instead.
+func (*CancelTaskResponse) Descriptor() ([]byte, []int) {
+	return file_proto_relay_proto_rawDescGZIP(), []int{7}
+}
+
+var File_proto_relay_proto protoreflect.FileDescriptor
+
+const file_proto_relay_proto_rawDesc = "" +
 	"\n" +
-	"\vrelay.proto\x12\brelay.v1\"`\n" +
+	"\x11proto/relay.proto\x12\brelay.v1\"`\n" +
 	"\rWorkerMessage\x12\x17\n" +
 	"\atask_id\x18\x01 \x01(\tR\x06taskId\x12\x12\n" +
 	"\x04type\x18\x02 \x01(\tR\x04type\x12\x0e\n" +
@@ -409,68 +489,77 @@ const file_relay_proto_rawDesc = "" +
 	"\x14UploadPayloadRequest\x12\x17\n" +
 	"\atask_id\x18\x01 \x01(\tR\x06taskId\x12\x12\n" +
 	"\x04data\x18\x02 \x01(\fR\x04data\"\x17\n" +
-	"\x15UploadPayloadResponse2\xe3\x01\n" +
+	"\x15UploadPayloadResponse\",\n" +
+	"\x11CancelTaskRequest\x12\x17\n" +
+	"\atask_id\x18\x01 \x01(\tR\x06taskId\"\x14\n" +
+	"\x12CancelTaskResponse2\xac\x02\n" +
 	"\x05Relay\x12D\n" +
 	"\fWorkerStream\x12\x17.relay.v1.WorkerMessage\x1a\x17.relay.v1.WorkerCommand(\x010\x01\x12B\n" +
 	"\n" +
 	"TaskStream\x12\x1b.relay.v1.TaskStreamRequest\x1a\x15.relay.v1.TaskMessage0\x01\x12P\n" +
-	"\rUploadPayload\x12\x1e.relay.v1.UploadPayloadRequest\x1a\x1f.relay.v1.UploadPayloadResponseB\x1cZ\x1acas-relay/internal/relayv1b\x06proto3"
+	"\rUploadPayload\x12\x1e.relay.v1.UploadPayloadRequest\x1a\x1f.relay.v1.UploadPayloadResponse\x12G\n" +
+	"\n" +
+	"CancelTask\x12\x1b.relay.v1.CancelTaskRequest\x1a\x1c.relay.v1.CancelTaskResponseB\x1cZ\x1acas-relay/internal/relayv1b\x06proto3"
 
 var (
-	file_relay_proto_rawDescOnce sync.Once
-	file_relay_proto_rawDescData []byte
+	file_proto_relay_proto_rawDescOnce sync.Once
+	file_proto_relay_proto_rawDescData []byte
 )
 
-func file_relay_proto_rawDescGZIP() []byte {
-	file_relay_proto_rawDescOnce.Do(func() {
-		file_relay_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_relay_proto_rawDesc), len(file_relay_proto_rawDesc)))
+func file_proto_relay_proto_rawDescGZIP() []byte {
+	file_proto_relay_proto_rawDescOnce.Do(func() {
+		file_proto_relay_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_relay_proto_rawDesc), len(file_proto_relay_proto_rawDesc)))
 	})
-	return file_relay_proto_rawDescData
+	return file_proto_relay_proto_rawDescData
 }
 
-var file_relay_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
-var file_relay_proto_goTypes = []any{
+var file_proto_relay_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_proto_relay_proto_goTypes = []any{
 	(*WorkerMessage)(nil),         // 0: relay.v1.WorkerMessage
 	(*WorkerCommand)(nil),         // 1: relay.v1.WorkerCommand
 	(*TaskStreamRequest)(nil),     // 2: relay.v1.TaskStreamRequest
 	(*TaskMessage)(nil),           // 3: relay.v1.TaskMessage
 	(*UploadPayloadRequest)(nil),  // 4: relay.v1.UploadPayloadRequest
 	(*UploadPayloadResponse)(nil), // 5: relay.v1.UploadPayloadResponse
+	(*CancelTaskRequest)(nil),     // 6: relay.v1.CancelTaskRequest
+	(*CancelTaskResponse)(nil),    // 7: relay.v1.CancelTaskResponse
 }
-var file_relay_proto_depIdxs = []int32{
+var file_proto_relay_proto_depIdxs = []int32{
 	0, // 0: relay.v1.Relay.WorkerStream:input_type -> relay.v1.WorkerMessage
 	2, // 1: relay.v1.Relay.TaskStream:input_type -> relay.v1.TaskStreamRequest
 	4, // 2: relay.v1.Relay.UploadPayload:input_type -> relay.v1.UploadPayloadRequest
-	1, // 3: relay.v1.Relay.WorkerStream:output_type -> relay.v1.WorkerCommand
-	3, // 4: relay.v1.Relay.TaskStream:output_type -> relay.v1.TaskMessage
-	5, // 5: relay.v1.Relay.UploadPayload:output_type -> relay.v1.UploadPayloadResponse
-	3, // [3:6] is the sub-list for method output_type
-	0, // [0:3] is the sub-list for method input_type
+	6, // 3: relay.v1.Relay.CancelTask:input_type -> relay.v1.CancelTaskRequest
+	1, // 4: relay.v1.Relay.WorkerStream:output_type -> relay.v1.WorkerCommand
+	3, // 5: relay.v1.Relay.TaskStream:output_type -> relay.v1.TaskMessage
+	5, // 6: relay.v1.Relay.UploadPayload:output_type -> relay.v1.UploadPayloadResponse
+	7, // 7: relay.v1.Relay.CancelTask:output_type -> relay.v1.CancelTaskResponse
+	4, // [4:8] is the sub-list for method output_type
+	0, // [0:4] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
 }
 
-func init() { file_relay_proto_init() }
-func file_relay_proto_init() {
-	if File_relay_proto != nil {
+func init() { file_proto_relay_proto_init() }
+func file_proto_relay_proto_init() {
+	if File_proto_relay_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_relay_proto_rawDesc), len(file_relay_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_relay_proto_rawDesc), len(file_proto_relay_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_relay_proto_goTypes,
-		DependencyIndexes: file_relay_proto_depIdxs,
-		MessageInfos:      file_relay_proto_msgTypes,
+		GoTypes:           file_proto_relay_proto_goTypes,
+		DependencyIndexes: file_proto_relay_proto_depIdxs,
+		MessageInfos:      file_proto_relay_proto_msgTypes,
 	}.Build()
-	File_relay_proto = out.File
-	file_relay_proto_goTypes = nil
-	file_relay_proto_depIdxs = nil
+	File_proto_relay_proto = out.File
+	file_proto_relay_proto_goTypes = nil
+	file_proto_relay_proto_depIdxs = nil
 }

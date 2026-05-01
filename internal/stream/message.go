@@ -16,6 +16,7 @@ const (
 	TypeEvent   MessageType = "event"
 	TypeStatus  MessageType = "status"
 	TypePayload MessageType = "payload" // relay→worker: encrypted task payload delivery
+	TypeCancel  MessageType = "cancel"  // relay→worker: client-requested task cancellation
 	TypePing    MessageType = "ping"    // worker→relay: bidi stream readiness probe
 	TypePong    MessageType = "pong"    // relay→worker: bidi stream readiness ack
 )

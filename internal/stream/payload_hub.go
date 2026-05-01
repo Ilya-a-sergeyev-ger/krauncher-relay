@@ -4,6 +4,7 @@ package stream
 
 import (
 	"encoding/json"
+	"fmt"
 	"sync"
 )
 
@@ -75,6 +76,27 @@ func (ph *PayloadHub) DeliverPayload(taskID string, data json.RawMessage) {
 
 	// Worker not yet registered — store for later delivery.
 	ph.payloads[taskID] = data
+}
+
+// DeliverCancel sends a TypeCancel command to the worker handling taskID.
+// Returns an error if no worker is registered for the task (task not running).
+func (ph *PayloadHub) DeliverCancel(taskID string) error {
+	ph.mu.Lock()
+	defer ph.mu.Unlock()
+
+	ch, ok := ph.workers[taskID]
+	if !ok {
+		return fmt.Errorf("no worker registered for task %q", taskID)
+	}
+	msg := Message{
+		TaskID: taskID,
+		Type:   TypeCancel,
+	}
+	select {
+	case ch <- msg:
+	default:
+	}
+	return nil
 }
 
 // Cleanup removes both the pending payload and worker registration for taskID.
