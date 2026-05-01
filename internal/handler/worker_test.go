@@ -46,7 +46,7 @@ func newTestEnv(t *testing.T) *testEnv {
 
 	lis := bufconn.Listen(bufSize)
 	srv := grpc.NewServer()
-	relayv1.RegisterRelayServer(srv, handler.NewRelayServer(hub, payloadHub, cfg))
+	relayv1.RegisterRelayServer(srv, handler.NewRelayServer(context.Background(), hub, payloadHub, cfg))
 	go srv.Serve(lis) //nolint:errcheck
 	t.Cleanup(srv.Stop)
 

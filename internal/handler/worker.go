@@ -50,7 +50,7 @@ func (s *RelayServer) WorkerStream(grpcStream relayv1.Relay_WorkerStreamServer) 
 	// Read goroutine: receive from worker, publish to hub.
 	readErrCh := make(chan error, 1)
 	go func() {
-		readErrCh <- workerReadLoop(grpcStream, s.hub, s.payloadHub, outCh, logger)
+		readErrCh <- workerReadLoop(s.ctx, grpcStream, s.hub, s.payloadHub, outCh, logger)
 	}()
 
 	// Write loop (main goroutine): forward commands to worker.
@@ -84,7 +84,10 @@ func (s *RelayServer) WorkerStream(grpcStream relayv1.Relay_WorkerStreamServer) 
 
 // workerReadLoop receives WorkerMessage protos from the stream, converts them
 // to internal stream.Message and publishes to the Hub.
+// srvCtx is the server-lifetime context, propagated to scheduleClose so its
+// grace-period goroutines exit on shutdown instead of leaking.
 func workerReadLoop(
+	srvCtx context.Context,
 	grpcStream relayv1.Relay_WorkerStreamServer,
 	hub *stream.Hub,
 	payloadHub *stream.PayloadHub,
@@ -134,22 +137,31 @@ func workerReadLoop(
 		}
 		if isStreamEnded(msg) {
 			payloadHub.Cleanup(msg.TaskID)
-			scheduleClose(hub, msg.TaskID, logger)
+			scheduleClose(srvCtx, hub, msg.TaskID, logger)
 		}
 	}
 }
 
 // scheduleClose closes the TaskStream after the grace period.
-func scheduleClose(hub *stream.Hub, taskID string, logger zerolog.Logger) {
+// The grace timer is bound to srvCtx: on server shutdown the goroutine
+// closes the stream early instead of outliving the server.
+func scheduleClose(srvCtx context.Context, hub *stream.Hub, taskID string, logger zerolog.Logger) {
 	logger.Info().
 		Str("task_id", taskID).
 		Dur("grace_sec", streamEndedGrace).
 		Msg("stream_ended_received")
 
 	go func() {
-		time.Sleep(streamEndedGrace)
-		hub.Close(taskID)
-		logger.Info().Str("task_id", taskID).Msg("stream_closed_after_grace")
+		timer := time.NewTimer(streamEndedGrace)
+		defer timer.Stop()
+		select {
+		case <-timer.C:
+			hub.Close(taskID)
+			logger.Info().Str("task_id", taskID).Msg("stream_closed_after_grace")
+		case <-srvCtx.Done():
+			hub.Close(taskID)
+			logger.Info().Str("task_id", taskID).Msg("stream_closed_on_shutdown")
+		}
 	}()
 }
 

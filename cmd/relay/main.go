@@ -36,18 +36,18 @@ func main() {
 	hub := stream.NewHub(cfg.RingBufferSize)
 	payloadHub := stream.NewPayloadHub()
 
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
 	grpcSrv := grpc.NewServer(
 		grpc.MaxRecvMsgSize(2<<20), // 2 MB — accommodates 1 MB payload + framing overhead
 	)
-	relayv1.RegisterRelayServer(grpcSrv, handler.NewRelayServer(hub, payloadHub, cfg))
+	relayv1.RegisterRelayServer(grpcSrv, handler.NewRelayServer(ctx, hub, payloadHub, cfg))
 
 	// Standard gRPC health check service (used by Kubernetes gRPC probes).
 	healthSrv := health.NewServer()
 	grpc_health_v1.RegisterHealthServer(grpcSrv, healthSrv)
 	healthSrv.SetServingStatus("", grpc_health_v1.HealthCheckResponse_SERVING)
-
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
 
 	go runGC(ctx, hub, cfg)
 	go serveHealthHTTP(cfg.HealthPort, hub, cfg)
