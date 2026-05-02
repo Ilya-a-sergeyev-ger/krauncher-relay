@@ -49,6 +49,12 @@ type Config struct {
 
 	// LogLevel is the minimum log level: "debug", "info", "warn", "error".
 	LogLevel string // CAS_RELAY_LOG_LEVEL (default "info")
+
+	// TLSCert and TLSKey are paths to a PEM-encoded server certificate and
+	// private key. When BOTH are set the gRPC server runs over TLS;
+	// otherwise it falls back to plaintext (backward-compatible default).
+	TLSCert string // CAS_RELAY_TLS_CERT (path)
+	TLSKey  string // CAS_RELAY_TLS_KEY  (path)
 }
 
 // Load reads configuration from environment variables and validates required fields.
@@ -65,6 +71,8 @@ func Load() (*Config, error) {
 		StreamTTL:      time.Duration(getenvInt("CAS_RELAY_STREAM_TTL_SEC", 300)) * time.Second,
 		LogJSON:        getenvBool("CAS_RELAY_LOG_JSON", true),
 		LogLevel:       getenv("CAS_RELAY_LOG_LEVEL", "info"),
+		TLSCert:        getenv("CAS_RELAY_TLS_CERT", ""),
+		TLSKey:         getenv("CAS_RELAY_TLS_KEY", ""),
 	}
 
 	var errs []error
@@ -79,6 +87,12 @@ func Load() (*Config, error) {
 	}
 	if cfg.RingBufferSize < 1 {
 		errs = append(errs, errors.New("CAS_RELAY_RING_BUFFER_SIZE must be >= 1"))
+	}
+	// TLSCert and TLSKey must be provided together: half-configured TLS
+	// would silently fall through to plaintext, which is an operator
+	// footgun for a security-relevant flag.
+	if (cfg.TLSCert == "") != (cfg.TLSKey == "") {
+		errs = append(errs, errors.New("CAS_RELAY_TLS_CERT and CAS_RELAY_TLS_KEY must both be set or both empty"))
 	}
 	if len(errs) > 0 {
 		return nil, errors.Join(errs...)

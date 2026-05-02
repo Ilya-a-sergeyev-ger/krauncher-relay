@@ -15,6 +15,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
 
@@ -39,9 +40,23 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	grpcSrv := grpc.NewServer(
-		grpc.MaxRecvMsgSize(2<<20), // 2 MB — accommodates 1 MB payload + framing overhead
-	)
+	grpcOpts := []grpc.ServerOption{
+		grpc.MaxRecvMsgSize(2 << 20), // 2 MB — accommodates 1 MB payload + framing overhead
+	}
+	if cfg.TLSCert != "" && cfg.TLSKey != "" {
+		creds, err := credentials.NewServerTLSFromFile(cfg.TLSCert, cfg.TLSKey)
+		if err != nil {
+			log.Fatal().Err(err).
+				Str("cert", cfg.TLSCert).
+				Str("key", cfg.TLSKey).
+				Msg("relay_tls_load_failed")
+		}
+		grpcOpts = append(grpcOpts, grpc.Creds(creds))
+		log.Info().Str("cert", cfg.TLSCert).Msg("relay_tls_enabled")
+	} else {
+		log.Warn().Msg("relay_tls_disabled_plaintext")
+	}
+	grpcSrv := grpc.NewServer(grpcOpts...)
 	relayv1.RegisterRelayServer(grpcSrv, handler.NewRelayServer(ctx, hub, payloadHub, cfg))
 
 	// Standard gRPC health check service (used by Kubernetes gRPC probes).
